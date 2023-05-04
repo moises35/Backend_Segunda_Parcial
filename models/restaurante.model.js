@@ -17,4 +17,6 @@ const Restaurante = sequelize.define('restaurante', {
     }
 });
 
-module.exports = Restaurante;
+module.exports = {
+    Restaurante
+};
