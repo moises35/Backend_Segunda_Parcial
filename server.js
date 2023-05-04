@@ -1,15 +1,15 @@
-const express = require('express')
-require('dotenv').config()
+const express = require('express');
+require('dotenv').config();
 const sequelize = require('./configs/sequelize.config');
-const PORT = process.env.PORT || 3000
-const app = express()
+const PORT = process.env.PORT || 3000;
+const app = express();
 
 // Middlewares
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
-
+app.use('/api/restaurante', require('./routes/restaurante.routes'));
 
 // Database connection and server start
 sequelize.authenticate()
