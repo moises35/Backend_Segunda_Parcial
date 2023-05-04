@@ -15,9 +15,18 @@ app.use(express.urlencoded({ extended: true }))
 sequelize.authenticate()
     .then(() => {
         console.log('💾 Conexión establecida con la base de datos.');
-        app.listen(PORT, () => {
-            console.log('✔ Servidor escuchando en el puerto 3000.');
-        });
+        // Sync database 
+        sequelize.sync({ force: false })
+            .then(() => {
+                console.log('✔ Sincronización completada.');
+                app.listen(PORT, () => {
+                    // Start server
+                    console.log(`🚀 Servidor escuchando en el puerto ${PORT}.`);
+                });
+            })
+            .catch(error => {
+                console.error('Error en la sincronización:', error);
+            });
     })
     .catch(error => {
         console.error('Error al conectar con la base de datos:', error);
