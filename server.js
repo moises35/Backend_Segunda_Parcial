@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 const sequelize = require('./configs/sequelize.config');
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/restaurante', require('./routes/restaurante.routes'));
+
+
 
 // Database connection and server start
 sequelize.authenticate()
