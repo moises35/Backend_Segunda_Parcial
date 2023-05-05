@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/restaurante', require('./routes/restaurante.routes'));
+app.use('/api/mesa', require('./routes/mesa.routes'));
 
 
 
