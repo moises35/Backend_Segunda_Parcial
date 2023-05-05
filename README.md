@@ -1,3 +1,4 @@
+En la carpeta server se debe de crear un archivo `.env` y rellenar con los siguientes datos:
 ```env
 DB_NAME=postgres
 DB_USER=postgres
