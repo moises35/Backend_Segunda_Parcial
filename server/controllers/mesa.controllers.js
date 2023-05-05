@@ -1,4 +1,4 @@
-const Mesa = require('./../models/mesa.model');
+const { Mesa } = require('./../models/mesa.model');
 
 // api/mesa
 const findAll = (req, res) => {
