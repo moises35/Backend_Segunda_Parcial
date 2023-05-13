@@ -7,6 +7,10 @@ const sequelize = new Sequelize(process.env.SEQUELIZE_METHOD_CONNECTION !== "URL
     })
     : 
     process.env.DB_URL
+    , {
+        // Desactivar logs de sequelize en consola
+        logging: false,
+    }
 );
 
 module.exports = sequelize;
