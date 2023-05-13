@@ -16,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/restaurante', require('./routes/restaurante.routes'));
 app.use('/api/mesa', require('./routes/mesa.routes'));
 app.use('/api/cliente', require('./routes/cliente.routes'));
+app.use('/api/reserva', require('./routes/reserva.routes'));
 
 
 // Database connection and server start
