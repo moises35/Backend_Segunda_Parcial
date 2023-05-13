@@ -1,12 +1,15 @@
 const { Mesa } = require('./../models/mesa.model');
+const { Restaurante } = require("./../models/restaurante.model")
 
 // api/mesa
 const findAll = (req, res) => {
-    Mesa.findAll()
-        .then(mesas => {
+    Mesa.findAll({
+        include: Restaurante,
+    })
+        .then((mesas) => {
             res.status(200).json(mesas);
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Error al obtener las mesas' });
         });
@@ -15,15 +18,15 @@ const findAll = (req, res) => {
 // api/mesa/:id
 const findById = (req, res) => {
     const { id } = req.params;
-    Mesa.findByPk(id)
-        .then(mesa => {
-            if (mesa) {
-                res.status(200).json(mesa);
+    Mesa.findByPk(id, { include: Restaurante })
+        .then((mesa) => {
+            if (!mesa) {
+                res.status(404).json({ message: `No se encontró la mesa con id ${id}` });
             } else {
-                res.status(404).json({ error: 'Mesa no encontrada' });
+                res.status(200).json(mesa);
             }
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Error al obtener la mesa' });
         });
@@ -31,12 +34,19 @@ const findById = (req, res) => {
 
 // api/mesa
 const create = (req, res) => {
-    const { nombre, restauranteId, x, y, planta, capacidad } = req.body;
-    Mesa.create({ nombre, restauranteId, x, y, planta, capacidad })
-        .then(mesa => {
+    const { nombre, posicion_x, posicion_y, planta, capacidad, id_restaurante } = req.body;
+    Mesa.create({
+        nombre,
+        posicion_x,
+        posicion_y,
+        planta,
+        capacidad,
+        id_restaurante,
+    })
+        .then((mesa) => {
             res.status(201).json(mesa);
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Error al crear la mesa' });
         });
@@ -45,25 +55,19 @@ const create = (req, res) => {
 // api/mesa/:id
 const update = (req, res) => {
     const { id } = req.params;
-    const { nombre, restauranteId, x, y, planta, capacidad } = req.body;
-    Mesa.findByPk(id)
-        .then(mesa => {
-            if (mesa) {
-                mesa.nombre = nombre;
-                mesa.restauranteId = restauranteId;
-                mesa.x = x;
-                mesa.y = y;
-                mesa.planta = planta;
-                mesa.capacidad = capacidad;
-                return mesa.save();
+    const { nombre, posicion_x, posicion_y, planta, capacidad, id_restaurante } = req.body;
+    Mesa.update(
+        { nombre, posicion_x, posicion_y, planta, capacidad, id_restaurante },
+        { returning: true, where: { id } }
+    )
+        .then(([rowsUpdated, [mesa]]) => {
+            if (!rowsUpdated) {
+                res.status(404).json({ message: `No se encontró la mesa con id ${id}` });
             } else {
-                res.status(404).json({ error: 'Mesa no encontrada' });
+                res.status(200).json(mesa);
             }
         })
-        .then(mesaActualizada => {
-            res.status(200).json(mesaActualizada);
-        })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Error al actualizar la mesa' });
         });
@@ -72,18 +76,15 @@ const update = (req, res) => {
 // api/mesa/:id
 const eliminar = (req, res) => {
     const { id } = req.params;
-    Mesa.findByPk(id)
-        .then(mesa => {
-            if (mesa) {
-                return mesa.destroy();
+    Mesa.destroy({ where: { id } })
+        .then((rowsDeleted) => {
+            if (!rowsDeleted) {
+                res.status(404).json({ message: `No se encontró la mesa con id ${id}` });
             } else {
-                res.status(404).json({ error: 'Mesa no encontrada' });
+                res.status(204).json();
             }
         })
-        .then(() => {
-            res.status(204).json();
-        })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Error al eliminar la mesa' });
         });

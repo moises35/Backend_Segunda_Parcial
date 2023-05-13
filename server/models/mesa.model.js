@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('./../configs/sequelize.config');
+const { Restaurante } = require('./restaurante.model')
 
 const Mesa = sequelize.define('Mesa', {
     id: {
@@ -9,10 +10,6 @@ const Mesa = sequelize.define('Mesa', {
     },
     nombre: {
         type: DataTypes.STRING,
-        allowNull: false,
-    },
-    restaurante_id: {
-        type: DataTypes.INTEGER,
         allowNull: false,
     },
     posicion_x: {
@@ -33,5 +30,8 @@ const Mesa = sequelize.define('Mesa', {
         allowNull: false,
     },
 });
+
+// Establecer relación entre mesa y restaurante, un restaurante tiene muchas mesas
+Mesa.belongsTo(Restaurante, { foreignKey: 'id_restaurante' });
 
 module.exports = { Mesa };
