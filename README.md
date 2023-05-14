@@ -52,8 +52,32 @@
 6. El servidor ya está iniciado🚀
 
 
+### Cliente
+1. Ingresar a la carpeta `client`
+   ```sh
+   cd client
+   ```
+
+2. Instalar las dependencias
+    ```sh
+    npm install
+    ```
+
+3. Crear un archivo .env en la carpeta /client/ para definir las configuraciones de las variables de entorno
+    ```env
+    # URL de nuestro backend 
+    REACT_APP_API_BASE_URL=http://localhost:8000
+    ```
+
+4. Ejecutar el proyecto del cliente
+    ```sh
+    npm start
+    ```
+
+5. El cliente ya está iniciado🚀
 
 
+-----------------------------------------------------------------------
 
 ## Endpoints de la API
 host: `http://localhost:3000/api`
