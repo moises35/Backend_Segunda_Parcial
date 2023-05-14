@@ -32,7 +32,7 @@ const Header = () => {
         <Nav>
             <ul>
                 <li>
-                    <NavLinkStyled exact to="/">Inicio</NavLinkStyled>
+                    <NavLinkStyled to="/">Inicio</NavLinkStyled>
                 </li>
                 <li>
                     <NavLinkStyled to="/cliente">Clientes</NavLinkStyled>
