@@ -2,7 +2,7 @@ const { Cliente } = require('./../models/cliente.model');
 const { Restaurante } = require('./../models/restaurante.model');
 const { Mesa } = require('./../models/mesa.model');
 const { Reserva } = require('./../models/reserva.model');
-
+const { Op } = require('sequelize');
 
 // api/reservas
 const crearReserva = (req, res) => {
@@ -91,55 +91,63 @@ const obtenerReservas = (req, res) => {
         });
 };
 
-// api/reservas/:idRestaurante/:fecha/:horaInicio/:horaFin
-const listarMesasDisponibles = (req, res) => {
-    const idRestaurante = req.params.idRestaurante;
-    const fecha = req.params.fecha; // YYYY-MM-DD
-    const horaInicio = req.params.horaInicio;
-    const horaFin = req.params.horaFin;
+function sumarUnaHora(hora) {
+    const horaDate = new Date(`2000-01-01T${hora}`);
+    horaDate.setHours(horaDate.getHours() + 1);
+    const horaFin = horaDate.toTimeString().slice(0, 8);
+    return horaFin;
+}
 
+// api/reservas/:idRestaurante/:fecha/:horas
+const listarMesasDisponibles = (req, res) => {
+    const { idRestaurante, fecha, horas } = req.params;
+    const horasArray = horas.split(",");
+    const horasFormato = horasArray.map(horaInicio => {
+        const horaFin = sumarUnaHora(horaInicio);
+        return [horaInicio, horaFin];
+    });
+    console.log(horasFormato);
     Reserva.findAll({
         where: {
             id_restaurante: idRestaurante,
             fecha: fecha,
-            hora_inicio: {
-                [Op.lt]: horaFin
-            },
-            hora_fin: {
-                [Op.gt]: horaInicio
-            }
-        }
-    }).then(reservas => {
-        // Obtener las mesas ocupadas en el rango de hora especificado
-        const mesasOcupadas = reservas.map(reserva => reserva.id_mesa);
+            [Op.or]: horasFormato.map(horas => ({
+                hora_inicio: horas[0],
+                hora_fin: horas[1],
+            })),
+        },
+        attributes: ['id_mesa'],
+    })
+        .then(reservas => {
+            const mesasReservadas = reservas.map(reserva => reserva.id_mesa);
 
-        // Obtener todas las mesas del restaurante
-        Mesa.findAll({
-            where: {
-                id_restaurante: idRestaurante
-            }
-        }).then(mesas => {
-            // Obtener las mesas disponibles
-            const mesasDisponibles = mesas.filter(mesa => !mesasOcupadas.includes(mesa.id));
+            Mesa.findAll({
+                where: {
+                    id_restaurante: idRestaurante,
+                    id: { [Op.notIn]: mesasReservadas },
+                },
+                attributes: ['id', 'capacidad', 'nombre'],
+            })
+                .then(mesas => {
+                    const capacidades = mesas.map(mesa => ({
+                        id_mesa: mesa.id,
+                        capacidad: mesa.capacidad,
+                        nombre: mesa.nombre
+                    }));
 
-            // Crear la lista de mesas con sus respectivas capacidades
-            const listaMesas = mesasDisponibles.map(mesa => {
-                return {
-                    id: mesa.id,
-                    capacidad: mesa.capacidad
-                };
-            });
-
-            res.status(200).json(listaMesas);
-        }).catch(error => {
+                    res.status(200).json(capacidades);
+                })
+                .catch(error => {
+                    console.error(error);
+                    res.status(500).json({ error: 'Error al obtener las mesas' });
+                });
+        })
+        .catch(error => {
             console.error(error);
-            res.status(500).json({ error: 'Error al obtener las mesas del restaurante' });
+            res.status(500).json({ error: 'Error al obtener las reservas' });
         });
-    }).catch(error => {
-        console.error(error);
-        res.status(500).json({ error: 'Error al obtener las reservas del restaurante' });
-    });
 };
+
 
 module.exports = {
     crearReserva,
