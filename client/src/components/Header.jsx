@@ -32,10 +32,7 @@ const Header = () => {
         <Nav>
             <ul>
                 <li>
-                    <NavLinkStyled to="/">Inicio</NavLinkStyled>
-                </li>
-                <li>
-                    <NavLinkStyled to="/cliente">Clientes</NavLinkStyled>
+                    <NavLinkStyled to="/">Clientes</NavLinkStyled>
                 </li>
                 <li>
                     <NavLinkStyled to="/restaurante">Restaurantes</NavLinkStyled>
@@ -45,6 +42,9 @@ const Header = () => {
                 </li>
                 <li>
                     <NavLinkStyled to="/reserva">Reservas</NavLinkStyled>
+                </li>
+                <li>
+                    <NavLinkStyled to="/listReserva">Lista de Reservas</NavLinkStyled>
                 </li>
             </ul>
         </Nav>
