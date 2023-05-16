@@ -32,6 +32,27 @@ const findById = (req, res) => {
         });
 };
 
+// api/mesa/:idRestaurante/:planta
+const findCoordenada = (req, res) => {
+    const { idRestaurante, planta } = req.params;
+    Mesa.findAll({
+        where: {
+            id_restaurante: idRestaurante,
+            planta: planta
+        }
+    })
+        .then((mesas) => {
+            if (!mesas) {
+                res.status(404).json({ message: `No se encontró la mesa con id ${id}` });
+            } else {
+                res.status(200).json(mesas);
+            }
+        })
+        .catch((error) => {
+            res.status(500).json({ error: 'Error al obtener la mesa' });
+        });
+};
+
 // api/mesa
 const create = (req, res) => {
     const { nombre, posicion_x, posicion_y, planta, capacidad, id_restaurante } = req.body;
@@ -95,5 +116,6 @@ module.exports = {
     findById,
     create,
     update,
-    eliminar
+    eliminar,
+    findCoordenada
 };

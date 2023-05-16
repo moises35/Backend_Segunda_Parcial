@@ -8,5 +8,6 @@ router.get('/:id', mesa_controller.findById);
 router.post('/', mesa_controller.create);
 router.put('/:id', mesa_controller.update);
 router.delete('/:id', mesa_controller.eliminar);
+router.get('/:idRestaurante/:planta' , mesa_controller.findCoordenada);
 
 module.exports = router;
