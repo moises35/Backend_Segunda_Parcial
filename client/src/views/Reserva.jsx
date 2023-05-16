@@ -114,7 +114,7 @@ const Reserva = () => {
     const [restauranteSeleccionado, setRestauranteSeleccionado] = useState("");
     const [fecha, setFecha] = useState("");
     const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
-    const [reservas, setReservas] = useState([]);
+    const [mesasDisponibles, setMesasDisponibles] = useState([]);
     const [editarDisponibleInput, setEditarDisponibleInput] = useState(false);
 
     useEffect(() => {
@@ -145,13 +145,81 @@ const Reserva = () => {
     const handleSearchMesas = () => {
         axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/reserva/${restauranteSeleccionado}/${fecha}/${horasSeleccionadas}`)
             .then(response => {
-                console.log(response.data);
+                setMesasDisponibles(response.data);
                 setEditarDisponibleInput(true);
             })
             .catch(error => {
                 console.log(error);
             });
+    }
 
+    const handleReservar = (reserva) => {
+        console.log(reserva);
+        const cedula_cliente = prompt("Ingrese su numero de cedula: ");
+        // Verificar si el cliente existe en la base de datos
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/cliente/${cedula_cliente}`)
+            .then(response => {
+                if (response.data.find) {
+                    console.log("El cliente existe");
+                    const dataReserva = {
+                        fecha,
+                        hora_inicio: reserva.hora_inicio,
+                        hora_fin: reserva.hora_fin,
+                        cantidad_solicitada: reserva.capacidad_mesa,
+                        id_mesa: reserva.id_mesa,
+                        id_cliente: response.data.cliente.id,
+                        id_restaurante: restauranteSeleccionado
+                    }
+                    axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/reserva`, dataReserva)
+                        .then(response => {
+                            console.log('Reserva creada: ')
+                            console.log(response.data);
+                            alert("Reserva creada con exito");
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                } else {
+                    const nombre = prompt("Ingrese su nombre: ");
+                    const apellido = prompt("Ingrese su apellido: ");
+                    if (nombre !== "" && apellido !== "") {
+                        const data = {
+                            cedula: cedula_cliente,
+                            nombre,
+                            apellido
+                        }
+                        axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/cliente`, data)
+                            .then(response => {
+                                console.log(response.data);
+                                // Crear la reserva fecha, hora_inicio, hora_fin, cantidad_solicitada, id_mesa, id_cliente
+                                const dataReserva = {
+                                    fecha,
+                                    hora_inicio: reserva.hora_inicio,
+                                    hora_fin: reserva.hora_fin,
+                                    cantidad_solicitada: reserva.capacidad_mesa,
+                                    id_mesa: reserva.id_mesa,
+                                    id_cliente: response.data.id,
+                                    id_restaurante: restauranteSeleccionado
+                                }
+                                axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/reserva`, dataReserva)
+                                    .then(response => {
+                                        console.log('Reserva creada: ')
+                                        console.log(response.data);
+                                        alert("Reserva creada con exito");
+                                    })
+                                    .catch(error => {
+                                        console.log(error);
+                                    });
+                            })
+                            .catch(error => {
+                                console.log(error);
+                            });
+                    }
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
     }
 
     return (
@@ -166,12 +234,12 @@ const Reserva = () => {
                 </select>
                 <div className="inline-inputs">
                     <label htmlFor="">Fecha de reserva: </label>
-                    <input 
-                        type="date" 
-                        value={fecha} 
-                        onChange={e => setFecha(e.target.value)} 
-                        required 
-                        disabled={editarDisponibleInput}    
+                    <input
+                        type="date"
+                        value={fecha}
+                        onChange={e => setFecha(e.target.value)}
+                        required
+                        disabled={editarDisponibleInput}
                     />
 
                 </div>
@@ -187,11 +255,40 @@ const Reserva = () => {
                         <option value="22:00:00">22:00 - 23:00</option>
                     </select>
                 </div>
-                <button onClick={handleSearchMesas}>Buscar</button>
-                {editarDisponibleInput? 
-                    <button onClick={() => setEditarDisponibleInput(false)} style={{backgroundColor: "#FF0000", marginTop: "12px"}}>Editar datos de busqueda</button>
-                :
-                    null
+                {editarDisponibleInput ?
+                    <>
+                        <button onClick={() => setEditarDisponibleInput(false)} style={{ backgroundColor: "#FF0000", marginTop: "12px" }}>Editar datos de busqueda</button>
+                        {mesasDisponibles.length > 0 ?
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tipo de mesa</th>
+                                        <th>Capacidad</th>
+                                        <th>Horario</th>
+                                        <th>Accion</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {mesasDisponibles.map(reserva => (
+                                        <tr key={reserva.id_mesa}>
+                                            <td>{reserva.id_mesa}</td>
+                                            <td>{reserva.nombre_mesa}</td>
+                                            <td>{reserva.capacidad_mesa}</td>
+                                            <td>{reserva.hora_inicio} a {reserva.hora_fin}</td>
+                                            <td>
+                                                <button onClick={() => handleReservar(reserva)}>Reservar</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            :
+                            <p>No hay mesas disponibles</p>
+                        }
+                    </>
+                    :
+                    <button onClick={handleSearchMesas}>Buscar</button>
                 }
             </form>
         </Container>
