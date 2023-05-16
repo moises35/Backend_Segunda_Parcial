@@ -39,7 +39,8 @@ const findCoordenada = (req, res) => {
         where: {
             id_restaurante: idRestaurante,
             planta: planta
-        }
+        },
+        attributes: ['posicion_x', 'posicion_y']
     })
         .then((mesas) => {
             if (!mesas) {
