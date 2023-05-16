@@ -32,4 +32,27 @@ const findAll = (req, res) => {
         });
 };
 
-module.exports = { create, findAll };
+// api/cliente/:cedula
+const findByCedula = (req, res) => {
+    const { cedula } = req.params;
+    Cliente.findOne({
+        where: { cedula: cedula }
+    })
+        .then(cliente => {
+            if (!cliente) {
+                res.status(200).json({find: false});
+            } else {
+                res.status(200).json({find: true, cliente});
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({ error: 'Error al obtener el cliente' });
+        });
+};
+
+
+
+
+
+module.exports = { create, findAll, findByCedula };
