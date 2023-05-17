@@ -12,12 +12,9 @@ const crearReserva = (req, res) => {
     // Buscar la mesa por id
     Mesa.findByPk(id_mesa)
         .then(mesa => {
-            // Verificar si la mesa existe y si está disponible
             if (!mesa) {
                 return res.status(404).json({ error: 'Mesa no encontrada' });
             }
-
-            // Buscar el cliente por id
             Cliente.findByPk(id_cliente)
                 .then(cliente => {
                     if (!cliente) {
@@ -77,7 +74,7 @@ const listarMesasDisponibles = (req, res) => {
         where: {
             id_restaurante: idRestaurante,
             fecha: fecha,
-            [Op.and]: horasFormato.map(horas => ({
+            [Op.or]: horasFormato.map(horas => ({
                 hora_inicio: horas[0],
                 hora_fin: horas[1],
             })),
@@ -85,6 +82,8 @@ const listarMesasDisponibles = (req, res) => {
         attributes: ['id_mesa', 'hora_inicio', 'hora_fin'],
     })
         .then(reservas => {
+            console.log("Reservas: ")
+            console.log(reservas);
             // const mesasReservadas = reservas.map(reserva => reserva.id_mesa);
             Mesa.findAll({
                 where: {
@@ -107,7 +106,8 @@ const listarMesasDisponibles = (req, res) => {
                             });
                         });
                     });
-                    
+                    console.log("Horas Mesas: ")
+                    console.log(horasMesas);
                     const mesasDisponibles = horasMesas.filter(horaMesa => {
                         // Verificamos si la mesa no está reservada en ese horario
                         const mesaReservada = reservas.find(reserva => {
@@ -121,6 +121,8 @@ const listarMesasDisponibles = (req, res) => {
                             return false;
                         }
                     });
+                    console.log("Mesas Disponibles: ")
+                    console.log(mesasDisponibles);
                     res.status(200).json(mesasDisponibles);
                 })
                 .catch(error => {
