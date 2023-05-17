@@ -117,11 +117,19 @@ const ListReserva = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [coordenadas, setCoordenadas] = useState({});
     const [otrasCoordenadas, setOtrasCoordenadas] = useState({});
+    const [filtroCampo, setFiltroCampo] = useState("");
+    const [filtroValor, setFiltroValor] = useState("");
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/reserva`)
             .then((res) => {
-                setReservas(res.data);
+                const reservas = res.data.sort((a, b) => {
+                    if (a.hora_inicio === b.hora_inicio) {
+                      return a.id_mesa - b.id_mesa;
+                    }
+                    return a.hora_inicio.localeCompare(b.hora_inicio);
+                  });;
+                setReservas(reservas);
             })
             .catch((err) => {
                 console.log(err);
@@ -131,8 +139,8 @@ const ListReserva = () => {
     const handleAbrirModal = (id_mesa) => {
         axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/mesa/${id_mesa}`)
             .then((res) => {
-                const coordenadadeMesaaPintar = {x: res.data.posicion_x, y: res.data.posicion_y};
-                const {planta, id_restaurante} = res.data;
+                const coordenadadeMesaaPintar = { x: res.data.posicion_x, y: res.data.posicion_y };
+                const { planta, id_restaurante } = res.data;
                 axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/mesa/${id_restaurante}/${planta}`)
                     .then((res) => {
                         const otrasCoordenadas = res.data; // [{posicion_x, posicion_y}, {posicion_x, posicion_y}, ...]
@@ -151,16 +159,56 @@ const ListReserva = () => {
             .catch((err) => {
                 console.log(err);
             }
-        );
+            );
     };
 
     const handleCerrarModal = () => {
         setModalIsOpen(false);
     };
 
+    const handleFiltrar = (e) => {
+        e.preventDefault();
+
+        // Filtrar las reservas según el campo y el valor especificados
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/reserva`)
+            .then((res) => {
+                const filtradas = res.data.filter((reserva) => {
+                    if (filtroCampo == "id_restaurante") {
+                        return reserva.id_restaurante == filtroValor;
+                    } else if (filtroCampo == "fecha") {
+                        return reserva.fecha == filtroValor;
+                    }
+                    return true;
+                });
+                setReservas(filtradas);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    };
+
     return (
         <Container>
             <h2>Lista de Reservas</h2>
+            <form onSubmit={handleFiltrar}>
+                <div className="inline-inputs">
+                    <select
+                        value={filtroCampo}
+                        onChange={(e) => setFiltroCampo(e.target.value)}
+                    >
+                        <option value="">Seleccione un campo</option>
+                        <option value="id_restaurante">ID Restaurante</option>
+                        <option value="fecha">Fecha</option>
+                    </select>
+                    <input
+                        type="text"
+                        value={filtroValor}
+                        onChange={(e) => setFiltroValor(e.target.value)}
+                        placeholder="Ingrese el valor a filtrar"
+                    />
+                </div>
+                <button type="submit">Filtrar</button>
+            </form>
             <table>
                 <thead>
                     <tr>
